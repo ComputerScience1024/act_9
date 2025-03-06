@@ -65,6 +65,11 @@ flutter:
     - assets/Heart.png
     - assets/Diamond.png
     - assets/Club.png
+    - assets/Ace.png
+    - assets/King.png
+    - assets/Queen.png
+    - assets/Jack.png
+    - assets/10.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - assets/Spade.png
