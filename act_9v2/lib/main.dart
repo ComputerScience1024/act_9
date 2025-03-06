@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 class FoldersScreen extends StatelessWidget {
   final List<Map<String, dynamic>> folders = [
-    {'name': 'Hearts', 'image': 'assets/Hearts.png', 'count': 3},
-    {'name': 'Spades', 'image': 'assets/Spades.png', 'count': 5},
-    {'name': 'Diamonds', 'image': 'assets/Diamonds.png', 'count': 4},
-    {'name': 'Clubs', 'image': 'assets/Clubs.png', 'count': 6},
+    {'name': 'Hearts', 'image': 'assets/Heart.png', 'count': 3},
+    {'name': 'Spades', 'image': 'assets/Spade.png', 'count': 5},
+    {'name': 'Diamonds', 'image': 'assets/Diamond.png', 'count': 4},
+    {'name': 'Clubs', 'image': 'assets/Club.png', 'count': 6},
   ];
 
   @override
