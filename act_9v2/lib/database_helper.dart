@@ -5,16 +5,23 @@ import 'package:path_provider/path_provider.dart';
 class DatabaseHelper {
   static const _databaseName = "card_organizer.db";
   static const _databaseVersion = 2; // Incremented for schema updates
-  late Database _db;
 
   static final DatabaseHelper instance = DatabaseHelper._internal();
   factory DatabaseHelper() => instance;
   DatabaseHelper._internal();
 
-  Future<void> init() async {
+  Database? _database;
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, _databaseName);
-    _db = await openDatabase(
+    return await openDatabase(
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
@@ -78,49 +85,44 @@ class DatabaseHelper {
   }
 
   Future<void> _insertDefaultData(Database db) async {
+    List<String> suits = ['Hearts', 'Spades', 'Diamonds', 'Clubs'];
+    for (String suit in suits) {
+      await db.insert('folders', {'name': suit}, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+
     List<Map<String, String>> cards = [
-      // Diamonds
       {'name': 'Ace', 'suit': 'Diamonds', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/01_of_diamonds_A.svg/154px-01_of_diamonds_A.svg.png'},
       {'name': '10', 'suit': 'Diamonds', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/10_of_diamonds_-_David_Bellot.svg/154px-10_of_diamonds_-_David_Bellot.svg.png'},
       {'name': '5', 'suit': 'Diamonds', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/05_of_diamonds.svg/154px-05_of_diamonds.svg.png'},
       {'name': 'Queen', 'suit': 'Diamonds', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Queen_of_diamonds_fr.svg/154px-Queen_of_diamonds_fr.svg.png'},
 
-      // Hearts
       {'name': 'Ace', 'suit': 'Hearts', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/01_of_hearts_A.svg/144px-01_of_hearts_A.svg.png'},
       {'name': 'King', 'suit': 'Hearts', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/King_of_hearts_fr.svg/144px-King_of_hearts_fr.svg.png'},
       {'name': '4', 'suit': 'Hearts', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/04_of_hearts.svg/144px-04_of_hearts.svg.png'},
       {'name': '9', 'suit': 'Hearts', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/09_of_hearts.svg/144px-09_of_hearts.svg.png'},
 
-      // Clubs
       {'name': '8', 'suit': 'Clubs', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/08_of_clubs.svg/185px-08_of_clubs.svg.png'},
       {'name': 'Jack', 'suit': 'Clubs', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/185px-Jack_of_clubs_fr.svg.png'},
       {'name': '5', 'suit': 'Clubs', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/05_of_clubs.svg/185px-05_of_clubs.svg.png'},
       {'name': '6', 'suit': 'Clubs', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/06_of_clubs.svg/185px-06_of_clubs.svg.png'},
 
-      // Spades
       {'name': 'Ace', 'suit': 'Spades', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/01_of_spades_A.svg/185px-01_of_spades_A.svg.png'},
       {'name': 'Queen', 'suit': 'Spades', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Queen_of_spades_fr.svg/185px-Queen_of_spades_fr.svg.png'},
       {'name': '3', 'suit': 'Spades', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/03_of_spades.svg/185px-03_of_spades.svg.png'},
       {'name': '4', 'suit': 'Spades', 'image_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/04_of_spades.svg/185px-04_of_spades.svg.png'},
     ];
 
-    // Insert default folders
-    List<String> suits = ['Hearts', 'Spades', 'Diamonds', 'Clubs'];
-    for (String suit in suits) {
-      await db.insert('folders', {'name': suit});
-    }
-
-    // Get folder IDs dynamically and insert cards
     for (var card in cards) {
       List<Map<String, dynamic>> folder = await db.query('folders', where: 'name = ?', whereArgs: [card['suit']]);
-      int folderId = folder.first['id'];
-
-      await db.insert('cards', {
-        'name': card['name'],
-        'suit': card['suit'],
-        'image_url': card['image_url'],
-        'folder_id': folderId,
-      });
+      if (folder.isNotEmpty) {
+        int folderId = folder.first['id'];
+        await db.insert('cards', {
+          'name': card['name'],
+          'suit': card['suit'],
+          'image_url': card['image_url'],
+          'folder_id': folderId,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
     }
   }
 }
