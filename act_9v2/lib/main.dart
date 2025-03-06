@@ -18,7 +18,6 @@ class _FoldersScreenState extends State<FoldersScreen> {
   final DatabaseHelper dbHelper = DatabaseHelper();
   List<Map<String, dynamic>> folders = [];
 
-  // Map folder names to their respective images
   final Map<String, String> folderImages = {
     'Hearts': 'assets/Heart.png',
     'Spades': 'assets/Spade.png',
@@ -47,7 +46,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
         'id': folder['id'],
         'name': folder['name'],
         'count': count,
-        'image': folderImages[folder['name']] ?? 'assets/default.png', // Default if missing
+        'image': folderImages[folder['name']] ?? 'assets/default.png',
       });
     }
 
@@ -119,6 +118,97 @@ class _CardsScreenState extends State<CardsScreen> {
     });
   }
 
+  void _showAddCardDialog() {
+    String cardName = '';
+    String cardImageUrl = '';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Card'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(labelText: 'Card Name'),
+                onChanged: (value) => cardName = value,
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: 'Image URL'),
+                onChanged: (value) => cardImageUrl = value,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (cardName.isNotEmpty && cardImageUrl.isNotEmpty) {
+                  await dbHelper.insertCard(cardName, widget.folderName, cardImageUrl, widget.folderId);
+                  _loadCards();
+                  Navigator.pop(context);
+                }
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditCardDialog(Map<String, dynamic> card) {
+    String newName = card['name'];
+    String newImageUrl = card['image_url'];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Card'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(labelText: 'Card Name'),
+                onChanged: (value) => newName = value,
+                controller: TextEditingController(text: card['name']),
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: 'Image URL'),
+                onChanged: (value) => newImageUrl = value,
+                controller: TextEditingController(text: card['image_url']),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await dbHelper.updateCard(card['id'], newName, widget.folderName, newImageUrl, widget.folderId);
+                _loadCards();
+                Navigator.pop(context);
+              },
+              child: Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteCard(int cardId) async {
+    await dbHelper.deleteCard(cardId);
+    _loadCards();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,11 +235,28 @@ class _CardsScreenState extends State<CardsScreen> {
                       }),
                       SizedBox(height: 10),
                       Text(card['name'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () => _showEditCardDialog(card),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteCard(card['id']),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 );
               },
             ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: _showAddCardDialog,
+      ),
     );
   }
 }
