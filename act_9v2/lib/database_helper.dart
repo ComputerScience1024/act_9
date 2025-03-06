@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "card_organizer.db";
-  static const _databaseVersion = 2; // Incremented for schema updates
+  static const _databaseVersion = 2; // Updated schema version
 
   static final DatabaseHelper instance = DatabaseHelper._internal();
   factory DatabaseHelper() => instance;
@@ -124,5 +124,38 @@ class DatabaseHelper {
         }, conflictAlgorithm: ConflictAlgorithm.ignore);
       }
     }
+  }
+
+  // CREATE - Insert a new card
+  Future<void> insertCard(String name, String suit, String imageUrl, int folderId) async {
+    final db = await database;
+    await db.insert('cards', {
+      'name': name,
+      'suit': suit,
+      'image_url': imageUrl,
+      'folder_id': folderId,
+    });
+  }
+
+  // UPDATE - Modify card details or move it to another folder
+  Future<void> updateCard(int cardId, String newName, String newSuit, String newImageUrl, int newFolderId) async {
+    final db = await database;
+    await db.update(
+      'cards',
+      {
+        'name': newName,
+        'suit': newSuit,
+        'image_url': newImageUrl,
+        'folder_id': newFolderId,
+      },
+      where: 'id = ?',
+      whereArgs: [cardId],
+    );
+  }
+
+  // DELETE - Remove a card
+  Future<void> deleteCard(int cardId) async {
+    final db = await database;
+    await db.delete('cards', where: 'id = ?', whereArgs: [cardId]);
   }
 }
