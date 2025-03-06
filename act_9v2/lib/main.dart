@@ -123,3 +123,90 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
+// Database test
+
+// import 'package:flutter/material.dart';
+// import 'database_helper.dart';
+
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await DatabaseHelper().database; // Initialize database
+//   runApp(MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Database Test',
+//       home: DatabaseTestScreen(),
+//     );
+//   }
+// }
+
+// class DatabaseTestScreen extends StatefulWidget {
+//   const DatabaseTestScreen({super.key});
+
+//   @override
+//   _DatabaseTestScreenState createState() => _DatabaseTestScreenState();
+// }
+
+// class _DatabaseTestScreenState extends State<DatabaseTestScreen> {
+//   final DatabaseHelper dbHelper = DatabaseHelper();
+//   List<Map<String, dynamic>> folders = [];
+//   List<Map<String, dynamic>> cards = [];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _loadData();
+//   }
+
+//   Future<void> _loadData() async {
+//     final db = await dbHelper.database;
+//     // Fetch folders
+//     List<Map<String, dynamic>> fetchedFolders = await db.query('folders');
+//     // Fetch cards
+//     List<Map<String, dynamic>> fetchedCards = await db.query('cards');
+
+//     setState(() {
+//       folders = fetchedFolders;
+//       cards = fetchedCards;
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text('Database Test')),
+//       body: SingleChildScrollView(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Padding(
+//               padding: const EdgeInsets.all(8.0),
+//               child: Text('Folders:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+//             ),
+//             ...folders.map((folder) => ListTile(
+//                   title: Text(folder['name']),
+//                   subtitle: Text('ID: ${folder['id']}, Created At: ${folder['created_at']}'),
+//                 )),
+
+//             Padding(
+//               padding: const EdgeInsets.all(8.0),
+//               child: Text('Cards:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+//             ),
+//             ...cards.map((card) => ListTile(
+//                   title: Text('${card['name']} of ${card['suit']}'),
+//                   subtitle: Text('ID: ${card['id']}, Image: ${card['image_url']}'),
+//                 )),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
